@@ -7,7 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ua.opu.mylibrary.navigation.AppNavigation
 import ua.opu.mylibrary.ui.theme.MyLibraryTheme
-import ua.opu.mylibrary.ui.viewmodel.TravelPlacesViewModel
+import ua.opu.mylibrary.ui.viewmodel.MyLibraryViewModel
 
 /**
  * Головна Activity застосунку.
@@ -24,10 +24,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyLibraryTheme {
-                val travelPlacesViewModel: TravelPlacesViewModel = viewModel()
-
+                val myLibraryViewModel: MyLibraryViewModel = viewModel()
                 AppNavigation(
-                    viewModel = travelPlacesViewModel
+                    viewModel = myLibraryViewModel
                 )
             }
         }

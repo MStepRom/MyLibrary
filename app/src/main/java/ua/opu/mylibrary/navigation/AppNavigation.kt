@@ -10,10 +10,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import ua.opu.mylibrary.ui.screens.AddEditPlaceScreen
-import ua.opu.mylibrary.ui.screens.PlaceDetailsScreen
-import ua.opu.mylibrary.ui.screens.PlacesListScreen
-import ua.opu.mylibrary.ui.viewmodel.TravelPlacesViewModel
+import ua.opu.mylibrary.ui.screens.AddEditBookScreen
+import ua.opu.mylibrary.ui.screens.BooksListScreen
+import ua.opu.mylibrary.ui.screens.DetailsBookScreen
+import ua.opu.mylibrary.ui.viewmodel.MyLibraryViewModel
 
 /**
  * Об'єкт із маршрутами застосунку.
@@ -22,17 +22,17 @@ import ua.opu.mylibrary.ui.viewmodel.TravelPlacesViewModel
  * Це зменшує ризик помилки в назві маршруту.
  */
 object AppRoutes {
-    const val PLACES_LIST = "places_list"
-    const val PLACE_ADD = "place_add"
-    const val PLACE_EDIT = "place_edit/{placeId}"
-    const val PLACE_DETAILS = "place_details/{placeId}"
+    const val BOOKS_LIST = "books_list"
+    const val BOOK_ADD = "book_add"
+    const val BOOK_EDIT = "book_edit/{bookId}"
+    const val BOOK_DETAILS = "book_details/{bookId}"
 
-    fun placeEdit(placeId: Int): String {
-        return "place_edit/$placeId"
+    fun bookEdit(bookId: Int): String {
+        return "book_edit/$bookId"
     }
 
-    fun placeDetails(placeId: Int): String {
-        return "place_details/$placeId"
+    fun bookDetails(bookId: Int): String {
+        return "book_details/$bookId"
     }
 }
 
@@ -40,43 +40,42 @@ object AppRoutes {
  * Навігаційний граф застосунку.
  *
  * У цьому файлі описано, які екрани є в застосунку та як між ними переходити.
- * Важливо: між екранами передається тільки id об'єкта, а не весь TravelPlace.
+ * Важливо: між екранами передається тільки id об'єкта.
  */
 @Composable
 fun AppNavigation(
-    viewModel: TravelPlacesViewModel,
+    viewModel: MyLibraryViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
         navController = navController,
-        startDestination = AppRoutes.PLACES_LIST
+        startDestination = AppRoutes.BOOKS_LIST
     ) {
-        composable(route = AppRoutes.PLACES_LIST) {
-            val uiState by viewModel.placesListUiState.collectAsState()
+        composable(route = AppRoutes.BOOKS_LIST) {
+            val uiState by viewModel.booksListUiState.collectAsState()
 
-            PlacesListScreen(
+            BooksListScreen(
                 uiState = uiState,
                 onAddClick = {
-                    viewModel.prepareNewPlace()
-                    navController.navigate(AppRoutes.PLACE_ADD)
+                    viewModel.prepareNewBook()
+                    navController.navigate(AppRoutes.BOOK_ADD)
                 },
-                onPlaceClick = { placeId ->
-                    navController.navigate(AppRoutes.placeDetails(placeId))
+                onBookClick = { bookId ->
+                    navController.navigate(AppRoutes.bookDetails(bookId))
                 }
             )
         }
 
-        composable(route = AppRoutes.PLACE_ADD) {
-            val uiState by viewModel.addEditPlaceUiState.collectAsState()
+        composable(route = AppRoutes.BOOK_ADD) {
+            val uiState by viewModel.addEditBookUiState.collectAsState()
 
-            AddEditPlaceScreen(
+            AddEditBookScreen(
                 uiState = uiState,
                 onNameChange = viewModel::updateName,
-                onCountryChange = viewModel::updateCountry,
-                onDescriptionChange = viewModel::updateDescription,
-                onCategoryChange = viewModel::updateCategory,
+                onAuthorChange = viewModel::updateAuthor,
+                onYearChange = viewModel::updateYear,
                 onSaveClick = {
-                    viewModel.savePlace()
+                    viewModel.saveBook()
                     navController.popBackStack()
                 },
                 onCancelClick = {
@@ -86,31 +85,30 @@ fun AppNavigation(
         }
 
         composable(
-            route = AppRoutes.PLACE_EDIT,
+            route = AppRoutes.BOOK_EDIT,
             arguments = listOf(
-                navArgument("placeId") {
+                navArgument("bookId") {
                     type = NavType.IntType
                 }
             )
         ) { backStackEntry ->
-            val placeId = backStackEntry.arguments?.getInt("placeId")
+            val bookId = backStackEntry.arguments?.getInt("bookId") //?: 0
 
-            LaunchedEffect(placeId) {
-                if (placeId != null) {
-                    viewModel.prepareEditPlace(placeId)
+            LaunchedEffect(bookId) {
+                if (bookId != null) {
+                    viewModel.prepareEditBook(bookId)
                 }
             }
 
-            val uiState by viewModel.addEditPlaceUiState.collectAsState()
+            val uiState by viewModel.addEditBookUiState.collectAsState()
 
-            AddEditPlaceScreen(
+            AddEditBookScreen(
                 uiState = uiState,
                 onNameChange = viewModel::updateName,
-                onCountryChange = viewModel::updateCountry,
-                onDescriptionChange = viewModel::updateDescription,
-                onCategoryChange = viewModel::updateCategory,
+                onAuthorChange = viewModel::updateAuthor,
+                onYearChange = viewModel::updateYear,
                 onSaveClick = {
-                    viewModel.savePlace()
+                    viewModel.saveBook()
                     navController.popBackStack()
                 },
                 onCancelClick = {
@@ -120,40 +118,37 @@ fun AppNavigation(
         }
 
         composable(
-            route = AppRoutes.PLACE_DETAILS,
+            route = AppRoutes.BOOK_DETAILS,
             arguments = listOf(
-                navArgument("placeId") {
+                navArgument("bookId") {
                     type = NavType.IntType
                 }
             )
         ) { backStackEntry ->
-            val placeId = backStackEntry.arguments?.getInt("placeId")
+            val bookId = backStackEntry.arguments?.getInt("bookId")
 
-            LaunchedEffect(placeId) {
-                if (placeId != null) {
-                    viewModel.prepareDetails(placeId)
+            LaunchedEffect(bookId) {
+                if (bookId != null) {
+                    viewModel.prepareDetails(bookId)
                 }
             }
 
-            val uiState by viewModel.placeDetailsUiState.collectAsState()
+            val uiState by viewModel.bookDetailsUiState.collectAsState()
 
-            PlaceDetailsScreen(
+            DetailsBookScreen(
                 uiState = uiState,
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onEditClick = { editPlaceId ->
-                    navController.navigate(AppRoutes.placeEdit(editPlaceId))
+                onEditClick = { editBookId ->
+                    navController.navigate(AppRoutes.bookEdit(editBookId))
                 },
-                onDeleteClick = { deletePlaceId ->
-                    viewModel.deletePlace(deletePlaceId)
+                onDeleteClick = { deleteBookId ->
+                    viewModel.deleteBook(deleteBookId)
                     navController.popBackStack()
                 },
-                onInterestLevelChange = { editPlaceId, level ->
-                    viewModel.updateInterestLevel(editPlaceId, level)
-                },
-                onVisitedChange = { editPlaceId, visited ->
-                    viewModel.updateVisited(editPlaceId, visited)
+                onRatingChange = { editBookId, rating ->
+                    viewModel.updateRating(editBookId, rating)
                 }
             )
         }
